@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.temple.tuf21842.rsatext">
 
+    <uses-permission android:name="edu.temple.tuf21842.rsatext.provider.READ" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,9 +19,10 @@
 
         <provider
             android:name=".RSAContentProvider"
-            android:authorities="edu.temple.tuf21842.RSAContentProvider"
+            android:authorities="edu.temple.tuf21842.rsatext.provider"
             android:enabled="true"
-            android:exported="false"></provider>
+            android:exported="false"
+            android:readPermission="edu.temple.tuf21842.rsatext.provider.READ"/>
     </application>
 
 </manifest>
