@@ -18,6 +18,8 @@ import java.security.Signature;
 import java.util.Enumeration;
 
 public class RSAContentProvider extends ContentProvider {
+    public static final Uri CONTENT_URI = Uri.parse("content://edu.temple.tuf21842.rsatext.provider");
+
     private KeyPairGenerator keyPairGenerator;
     private KeyPair keyPair;
     private SharedPreferences preferences;
