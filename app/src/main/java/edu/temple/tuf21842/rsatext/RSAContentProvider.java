@@ -9,6 +9,7 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
+import android.util.Base64;
 import android.util.Log;
 
 import java.security.KeyPair;
@@ -23,6 +24,8 @@ public class RSAContentProvider extends ContentProvider {
     private KeyPairGenerator keyPairGenerator;
     private KeyPair keyPair;
     private SharedPreferences preferences;
+    private String privateKey = "";
+    private String publicKey = "";
     private final String TAG = "RSAContentProvider";
 
     public RSAContentProvider() {
@@ -47,23 +50,26 @@ public class RSAContentProvider extends ContentProvider {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+
+    //TODO: Save keys and move this stuff to update
     @Override
     public boolean onCreate() {
         //SharedPreferences pref = getContext().getSharedPreferences("edu.temple.tuf21842.rsa", Context.MODE_PRIVATE);
-        String privateKey = "";
-        String publicKey = "";
+
         try {
             keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA);
-            keyPairGenerator.initialize(
-                    new KeyGenParameterSpec.Builder(
-                            "key1",
-                            KeyProperties.PURPOSE_SIGN)
-                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-                            .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
-                            .build());
+//            keyPairGenerator.initialize(
+//                    new KeyGenParameterSpec.Builder(
+//                            "key1",
+//                            KeyProperties.PURPOSE_SIGN)
+//                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+//                            .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
+//                            .build());
             keyPair = keyPairGenerator.genKeyPair();
             KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
-            Log.d(TAG, keyPair.getPrivate().toString());
+
+            privateKey = Base64.encodeToString(keyPair.getPrivate().getEncoded(), Base64.DEFAULT);
+            publicKey = Base64.encodeToString(keyPair.getPublic().getEncoded(), Base64.DEFAULT);
             ks.load(null);
             Enumeration<String> aliases = ks.aliases();
             Log.d(TAG, aliases.nextElement());
@@ -75,13 +81,12 @@ public class RSAContentProvider extends ContentProvider {
         return false;
     }
 
+    //TODO: Return these as real strings
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
-        // TODO: Implement this to handle query requests from clients.
-        //throw new UnsupportedOperationException("Not yet implemented");
         MatrixCursor matrixCursor = new MatrixCursor(new String[]{"private","public"});
-        matrixCursor.addRow(new Object[]{keyPair.getPrivate().toString(),keyPair.getPublic().toString()});
+        matrixCursor.addRow(new Object[]{privateKey,publicKey});
         return matrixCursor;
     }
 
