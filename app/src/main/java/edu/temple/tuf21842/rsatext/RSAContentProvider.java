@@ -26,6 +26,7 @@ public class RSAContentProvider extends ContentProvider {
     private SharedPreferences preferences;
     private String privateKey = "";
     private String publicKey = "";
+    private SharedPreferences pref;
     private final String TAG = "RSAContentProvider";
 
     public RSAContentProvider() {
@@ -54,34 +55,13 @@ public class RSAContentProvider extends ContentProvider {
     //TODO: Save keys and move this stuff to update
     @Override
     public boolean onCreate() {
-        //SharedPreferences pref = getContext().getSharedPreferences("edu.temple.tuf21842.rsa", Context.MODE_PRIVATE);
+        pref = getContext().getSharedPreferences("edu.temple.tuf21842.rsa", Context.MODE_PRIVATE);
 
-        try {
-            keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA);
-//            keyPairGenerator.initialize(
-//                    new KeyGenParameterSpec.Builder(
-//                            "key1",
-//                            KeyProperties.PURPOSE_SIGN)
-//                            .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-//                            .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
-//                            .build());
-            keyPair = keyPairGenerator.genKeyPair();
-            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
 
-            privateKey = Base64.encodeToString(keyPair.getPrivate().getEncoded(), Base64.DEFAULT);
-            publicKey = Base64.encodeToString(keyPair.getPublic().getEncoded(), Base64.DEFAULT);
-            ks.load(null);
-            Enumeration<String> aliases = ks.aliases();
-            Log.d(TAG, aliases.nextElement());
-            //Signature signature = Signature.getInstance("SHA256withRSA/PSS");
-        } catch (Exception e) {
-            Log.d(TAG, e.toString());
-        }
         // TODO: Implement this to initialize your content provider on startup.
         return false;
     }
 
-    //TODO: Return these as real strings
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
@@ -93,7 +73,21 @@ public class RSAContentProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        try {
+            keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA);
+            keyPair = keyPairGenerator.genKeyPair();
+            privateKey = Base64.encodeToString(keyPair.getPrivate().getEncoded(), Base64.DEFAULT);
+            publicKey = Base64.encodeToString(keyPair.getPublic().getEncoded(), Base64.DEFAULT);
+
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString(getContext().getString(R.string.PRIVATE_KEY), privateKey);
+            editor.putString(getContext().getString(R.string.PUBLIC_KEY), publicKey);
+            editor.apply();
+
+            //Signature signature = Signature.getInstance("SHA256withRSA/PSS");
+        } catch (Exception e) {
+            Log.d(TAG, e.toString());
+        }
+        return 1;
     }
 }
